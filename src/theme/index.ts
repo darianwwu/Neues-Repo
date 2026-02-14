@@ -56,6 +56,11 @@ export const theme = extendTheme({
           borderRadius: '18px'
         }
       }
+    },
+    Toast: {
+      defaultProps: {
+        position: 'top'
+      }
     }
   }
 });
