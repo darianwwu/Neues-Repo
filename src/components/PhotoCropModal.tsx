@@ -17,7 +17,7 @@ import {
   VStack
 } from '@chakra-ui/react';
 import Cropper, { Area } from 'react-easy-crop';
-import { getCroppedJpeg } from '@/lib/image';
+import { getCroppedPng } from '@/lib/image';
 
 export function PhotoCropModal({
   isOpen,
@@ -43,7 +43,7 @@ export function PhotoCropModal({
     if (!imageSrc || !area) return;
     setBusy(true);
     try {
-      const blob = await getCroppedJpeg(imageSrc, area, 1080, 0.85);
+      const blob = await getCroppedPng(imageSrc, area, 1080);
       onCropped(blob);
       onClose();
     } finally {

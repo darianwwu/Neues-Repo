@@ -26,6 +26,8 @@ export type ClothingCategory =
 
 export type WeatherKind = 'Clear' | 'Clouds' | 'Rain' | 'Drizzle' | 'Thunderstorm' | 'Snow' | 'Fog' | 'Other';
 
+export type LayerPosition = 'under' | 'over';
+
 export type ClothingItem = {
   id: string;
   user_id: string;
@@ -38,6 +40,8 @@ export type ClothingItem = {
   color: string | null;
   tags: string[];
   rating: number | null; // 1..5 (manual)
+  layerable: boolean; // ob das Teil layerbar ist
+  layer_position: LayerPosition | null; // 'under' oder 'over'
   last_worn_at: string | null;
   created_at: string;
   updated_at: string;
@@ -47,6 +51,7 @@ export type Outfit = {
   id: string; // client-side id
   created_for: string; // YYYY-MM-DD
   slots: Partial<Record<ClothingCategory, ClothingItem>>;
+  layeredTop?: ClothingItem; // Optional: zweites Top für Layering (unter oder über dem Haupt-Top)
   score: number;
   reason: string[];
 };

@@ -19,11 +19,10 @@ function createImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function getCroppedJpeg(
+export async function getCroppedPng(
   imageSrc: string,
   pixelCrop: Area,
-  maxSize = 1080,
-  quality = 0.85
+  maxSize = 1080
 ): Promise<Blob> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -41,6 +40,9 @@ export async function getCroppedJpeg(
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
+
+  // Clear canvas with transparent background
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.drawImage(
     image,
@@ -60,8 +62,17 @@ export async function getCroppedJpeg(
         if (!blob) reject(new Error('Could not create image blob'));
         else resolve(blob);
       },
-      'image/jpeg',
-      quality
+      'image/png'
     );
   });
+}
+
+// Legacy function for backward compatibility
+export async function getCroppedJpeg(
+  imageSrc: string,
+  pixelCrop: Area,
+  maxSize = 1080,
+  quality = 0.85
+): Promise<Blob> {
+  return getCroppedPng(imageSrc, pixelCrop, maxSize);
 }

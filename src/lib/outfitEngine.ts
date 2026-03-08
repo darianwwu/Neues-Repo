@@ -164,6 +164,28 @@ export function generateOutfit(items: ClothingItem[], weather: WeatherNow | null
     }
   }
 
+  // Layering: Wenn das gewählte Top layerbar ist, versuche ein zweites Top zu finden
+  let layeredTop: ClothingItem | undefined;
+  const mainTop = slots.Top;
+  if (mainTop?.layerable && mainTop.layer_position) {
+    // Suche nach einem passenden Layer-Partner
+    const layerCandidates = items.filter((i) => {
+      if (i.category !== 'Top' || i.id === mainTop.id || !i.layerable) return false;
+      // Wenn mainTop "under" ist, suche nach "over" (und umgekehrt)
+      if (mainTop.layer_position === 'under' && i.layer_position === 'over') return true;
+      if (mainTop.layer_position === 'over' && i.layer_position === 'under') return true;
+      return false;
+    });
+
+    if (layerCandidates.length > 0) {
+      const layerPick = pickBest(layerCandidates, 'Top', targets, mainTop.id);
+      if (layerPick.picked) {
+        layeredTop = layerPick.picked;
+        reason.push(`Layering: ${mainTop.layer_position === 'under' ? 'Basis + darüber' : 'darüber + Basis'}`);
+      }
+    }
+  }
+
   const shoes = pickBest(items, 'Shoes', targets);
   if (shoes.picked) slots.Shoes = shoes.picked;
 
@@ -178,16 +200,18 @@ export function generateOutfit(items: ClothingItem[], weather: WeatherNow | null
     if (acc.picked) slots.Accessory = acc.picked;
   }
 
-  // Score: average of slot scores
-  const slotScores = (Object.values(slots) as ClothingItem[])
-    .filter(Boolean)
-    .map((it) => scoreItem(it, it.category, targets).score);
+  // Score: average of slot scores (including layeredTop if present)
+  const allItems = [...(Object.values(slots) as ClothingItem[]).filter(Boolean)];
+  if (layeredTop) allItems.push(layeredTop);
+  
+  const slotScores = allItems.map((it) => scoreItem(it, it.category, targets).score);
   const score = slotScores.length ? slotScores.reduce((a, b) => a + b, 0) / slotScores.length : 0;
 
   return {
     id: nanoid(),
     created_for: wornOn,
     slots,
+    layeredTop,
     score,
     reason
   };

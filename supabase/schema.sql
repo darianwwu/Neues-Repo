@@ -16,6 +16,8 @@ create table if not exists public.clothing_items (
   color text,
   tags text[] not null default '{}'::text[],
   rating int check (rating between 1 and 5),
+  layerable boolean not null default false,
+  layer_position text check (layer_position in ('under', 'over')),
   last_worn_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

@@ -72,10 +72,14 @@ export async function acceptOutfit(userId: string, outfit: Outfit): Promise<Wear
     .single();
   if (error) throw error;
 
-  // update last_worn_at on involved items
+  // update last_worn_at on involved items (including layeredTop)
   const itemIds = Object.values(outfit.slots)
     .filter(Boolean)
     .map((i) => i!.id);
+  
+  if (outfit.layeredTop) {
+    itemIds.push(outfit.layeredTop.id);
+  }
 
   if (itemIds.length) {
     const { error: upErr } = await supabase

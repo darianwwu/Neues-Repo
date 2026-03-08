@@ -24,7 +24,7 @@ import {
   VStack,
   useToast
 } from '@chakra-ui/react';
-import type { ClothingItem, ClothingType } from '@/lib/types';
+import type { ClothingItem, ClothingType, LayerPosition } from '@/lib/types';
 import { categoryForType } from '@/lib/outfitEngine';
 import { readFileAsDataURL } from '@/lib/image';
 import { uploadClothingImage } from '@/lib/storage';
@@ -72,6 +72,8 @@ export function ClothingFormModal({
   const [color, setColor] = useState(initial?.color ?? '');
   const [tagsText, setTagsText] = useState((initial?.tags ?? []).join(', '));
   const [rating, setRating] = useState(initial?.rating ?? 3);
+  const [layerable, setLayerable] = useState(initial?.layerable ?? false);
+  const [layerPosition, setLayerPosition] = useState<LayerPosition | null>(initial?.layer_position ?? null);
 
   const [imageUrl, setImageUrl] = useState<string | null>(initial?.image_url ?? null);
   const [pendingSrc, setPendingSrc] = useState<string | null>(null);
@@ -89,6 +91,8 @@ export function ClothingFormModal({
     setColor(initial?.color ?? '');
     setTagsText((initial?.tags ?? []).join(', '));
     setRating(initial?.rating ?? 3);
+    setLayerable(initial?.layerable ?? false);
+    setLayerPosition(initial?.layer_position ?? null);
     setImageUrl(initial?.image_url ?? null);
     setPendingSrc(null);
   }, [isOpen, initial]);
@@ -142,6 +146,8 @@ export function ClothingFormModal({
         color: color.trim() || null,
         tags,
         rating: Math.max(1, Math.min(5, Number(rating))),
+        layerable,
+        layer_position: layerable ? layerPosition : null,
         image_url: imageUrl,
         created_at: initial?.created_at ?? new Date().toISOString()
       });
@@ -184,8 +190,8 @@ export function ClothingFormModal({
                       Foto auswählen
                     </Button>
                     <Text fontSize="xs" color="gray.600">
-                      Tipp: Immer ähnlich fotografieren (gleiches Licht, neutraler Hintergrund). In der App kannst du
-                      quadratisch zuschneiden.
+                      Tipp: Nutze transparente PNGs für perfektes Layering! Immer ähnlich fotografieren (gleiches Licht, 
+                      neutraler Hintergrund). In der App kannst du quadratisch zuschneiden.
                     </Text>
                     <Input
                       ref={fileRef}
@@ -239,6 +245,28 @@ export function ClothingFormModal({
                 <Switch isChecked={waterproof} onChange={(e) => setWaterproof(e.target.checked)} />
                 <FormLabel m={0}>Regenfest (für Jacke/Schuhe relevant)</FormLabel>
               </FormControl>
+
+              <FormControl display="flex" alignItems="center" gap={3}>
+                <Switch isChecked={layerable} onChange={(e) => setLayerable(e.target.checked)} />
+                <FormLabel m={0}>Layerbar (kann mit anderen Teilen kombiniert werden)</FormLabel>
+              </FormControl>
+
+              {layerable && (
+                <FormControl>
+                  <FormLabel>Layer-Position</FormLabel>
+                  <Select
+                    value={layerPosition ?? ''}
+                    onChange={(e) => setLayerPosition((e.target.value as LayerPosition) || null)}
+                  >
+                    <option value="">Auswählen...</option>
+                    <option value="under">Drunter (z.B. Hemd unter Pullover)</option>
+                    <option value="over">Drüber (z.B. Jacke über Shirt)</option>
+                  </Select>
+                  <Text fontSize="xs" color="gray.600" mt={1}>
+                    Wichtig für transparente PNGs: "Drunter" wird zuerst gezeichnet, "Drüber" darüber.
+                  </Text>
+                </FormControl>
+              )}
 
               <FormControl>
                 <FormLabel>Tags (Komma-separiert)</FormLabel>

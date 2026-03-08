@@ -60,6 +60,12 @@ export function OutfitCard({
   readOnly?: boolean;
 }) {
   const slotItems = SLOT_ORDER.map((s) => ({ slot: s, item: outfit.slots[s] })).filter((x) => x.item);
+  
+  // Add layered top if present
+  const allDisplayItems = [...slotItems];
+  if (outfit.layeredTop) {
+    allDisplayItems.push({ slot: 'Top' as ClothingCategory, item: outfit.layeredTop });
+  }
 
   return (
     <GlassCard p={4}>
@@ -91,48 +97,51 @@ export function OutfitCard({
       </HStack>
 
       <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3} mt={4}>
-        {slotItems.map(({ slot, item }) => (
-          <Box
-            key={slot}
-            border="1px solid"
-            borderColor="blackAlpha.100"
-            borderRadius="16px"
-            overflow="hidden"
-            bg="white"
-          >
-            {item?.image_url ? (
-              <Image src={item.image_url} alt={item.name ?? item.type} w="full" h="120px" objectFit="cover" />
-            ) : (
-              <Box w="full" h="120px" bg="gray.100" />
-            )}
-            <Box p={3}>
-              <HStack>
-                <Text fontWeight={800} fontSize="sm">
-                  {SLOT_LABEL[slot]}
+        {allDisplayItems.map(({ slot, item }, idx) => {
+          const isLayer = idx >= slotItems.length; // Layered item
+          return (
+            <Box
+              key={`${slot}-${idx}`}
+              border="1px solid"
+              borderColor="blackAlpha.100"
+              borderRadius="16px"
+              overflow="hidden"
+              bg="white"
+            >
+              {item?.image_url ? (
+                <Image src={item.image_url} alt={item.name ?? item.type} w="full" h="120px" objectFit="cover" />
+              ) : (
+                <Box w="full" h="120px" bg="gray.100" />
+              )}
+              <Box p={3}>
+                <HStack>
+                  <Text fontWeight={800} fontSize="sm">
+                    {isLayer ? `${SLOT_LABEL[slot]} (Layer)` : SLOT_LABEL[slot]}
+                  </Text>
+                  <Spacer />
+                  {!readOnly && !isLayer ? (
+                    <Icon
+                      as={RefreshCw}
+                      cursor="pointer"
+                      opacity={0.75}
+                      _hover={{ opacity: 1 }}
+                      onClick={() => {
+                        if (!items) return;
+                        onChange?.(replaceSlot(outfit, items, weather, slot));
+                      }}
+                    />
+                  ) : null}
+                </HStack>
+                <Text fontWeight={700} fontSize="sm" mt={1} noOfLines={1}>
+                  {item?.name || item?.type}
                 </Text>
-                <Spacer />
-                {!readOnly ? (
-                  <Icon
-                    as={RefreshCw}
-                    cursor="pointer"
-                    opacity={0.75}
-                    _hover={{ opacity: 1 }}
-                    onClick={() => {
-                      if (!items) return;
-                      onChange?.(replaceSlot(outfit, items, weather, slot));
-                    }}
-                  />
-                ) : null}
-              </HStack>
-              <Text fontWeight={700} fontSize="sm" mt={1} noOfLines={1}>
-                {item?.name || item?.type}
-              </Text>
-              <Text fontSize="xs" color="gray.600">
-                {lastWornLabel(item!)}
-              </Text>
+                <Text fontSize="xs" color="gray.600">
+                  {lastWornLabel(item!)}
+                </Text>
+              </Box>
             </Box>
-          </Box>
-        ))}
+          );
+        })}
       </SimpleGrid>
 
       <HStack mt={4}>
