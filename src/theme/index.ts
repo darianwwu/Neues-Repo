@@ -59,7 +59,9 @@ export const theme = extendTheme({
     },
     Toast: {
       defaultProps: {
-        position: 'top'
+        position: 'top-left',
+        duration: 5000,
+        isClosable: true
       }
     }
   }
